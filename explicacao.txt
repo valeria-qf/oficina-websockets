@@ -1,0 +1,19 @@
+Para garantir a persistência e a recuperação de mensagens após quedas de conexão ou reinícios do servidor, a aplicação de chat WebSocket foi aprimorada com um banco de dados SQLite e um mecanismo de offset.
+
+Persistência de Mensagens:
+Foi incorporado um banco de dados SQLite para armazenar todas as mensagens enviadas pelos clientes. A tabela messages foi criada com os seguintes campos:
+
+- id: Identificador único da mensagem, gerado automaticamente pelo banco de dados.
+- client_offset: Identificador único associado à mensagem enviada pelo cliente, utilizado para evitar duplicações e gerenciar a recuperação de mensagens.
+- content: Conteúdo da mensagem enviada pelo cliente.
+
+O banco de dados é atualizado a cada nova mensagem, garantindo que todas sejam armazenadas e recuperáveis em caso de falhas.
+
+Mecanismo de Offset:
+Para gerenciar a sincronização entre o estado local dos clientes e o estado global do servidor, foi implementado um mecanismo de offset para rastrear a última mensagem conhecida por cada cliente e para garantir a recuperação de mensagens perdidas.
+
+- Envio de Mensagens: Cada mensagem recebe um client_offset único, que é incrementado a cada nova mensagem para evitar duplicações.
+
+- Recuperação de Mensagens: Ao reconectar, um cliente envia seu serverOffset atual. O servidor então envia todas as mensagens com IDs maiores que o serverOffset, garantindo que o cliente receba todas as mensagens enviadas enquanto estava desconectado.
+
+Esse mecanismo assegura que os clientes sincronizem seu estado local com o estado global do servidor e recuperem mensagens perdidas durante a desconexão.

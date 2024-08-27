@@ -63,7 +63,15 @@
     </form>
     <script src="/socket.io/socket.io.js"></script>
     <script>
-      const socket = io();
+      let serverOffset = 0;
+
+      const socket = io({
+        auth: {
+          serverOffset: 0
+        },
+        ackTimeout: 10000,
+        retries: 3,
+      });
 
       const form = document.getElementById("form");
       const messageInput = document.getElementById("input");
@@ -71,7 +79,12 @@
 
       form.addEventListener("submit", (e) => {
         e.preventDefault();
-        socket.emit("send message", messageInput.value);
+        if (input.value) {
+          // compute a unique offset
+          const clientOffset = `${socket.id}-${serverOffset++}`;
+          socket.emit("send message", messageInput.value, clientOffset); 
+          input.value = '';
+        }
       });
 
       socket.on("send message", (msg) => {
@@ -81,6 +94,7 @@
 
         ul.append(message);
         messageInput.value = "";
+        socket.auth.serverOffset = serverOffset;
       });
     </script>
   </body>
